@@ -4,19 +4,20 @@ import { FaSearch } from "react-icons/fa";
 import PieChart from "../components/PieChart";
 import ItineraryCard from "../components/ItineraryCard";
 import UserTripForm from "../components/UserTripForm";
-
-
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
   const [selectedDestination, setSelectedDestination] = useState(null);
   const [customTrip, setCustomTrip] = useState(null);
+  const navigate = useNavigate();
 
-  <UserTripForm onSubmit={setCustomTrip} />
-  const filteredDestinations = destinationsData.filter((dest) =>
-    dest.name.toLowerCase().includes(search.toLowerCase()) &&
-    (filter === "All" || dest.category === filter)
+  <UserTripForm onSubmit={setCustomTrip} />;
+  const filteredDestinations = destinationsData.filter(
+    (dest) =>
+      dest.name.toLowerCase().includes(search.toLowerCase()) &&
+      (filter === "All" || dest.category === filter)
   );
 
   return (
@@ -60,13 +61,16 @@ const Dashboard = () => {
               <span className="font-semibold">Category:</span> {dest.category}
             </p>
             <p className="text-sm">
-              <span className="font-semibold">Estimated Cost:</span> ₹{dest.cost}
+              <span className="font-semibold">Estimated Cost:</span> ₹
+              {dest.cost}
             </p>
             <button
-              onClick={() => setSelectedDestination(dest)}
-              className="mt-3 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+              onClick={() =>
+                navigate(`/customize`, { state: { destination: dest } })
+              }
+              className="mt-3 bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
             >
-              View Expense Breakdown
+              Customize Expense
             </button>
           </div>
         ))}
@@ -74,12 +78,12 @@ const Dashboard = () => {
 
       {/* Pie Chart */}
       {selectedDestination && (
-  <div className="mt-10">
-    <PieChart destination={selectedDestination} />
-    <ItineraryCard itinerary={selectedDestination.itinerary} />
-    {customTrip && <PieChart destination={customTrip} />}
-  </div>
-)}
+        <div className="mt-10">
+          <PieChart destination={selectedDestination} />
+          <ItineraryCard itinerary={selectedDestination.itinerary} />
+          {customTrip && <PieChart destination={customTrip} />}
+        </div>
+      )}
     </div>
   );
 };
