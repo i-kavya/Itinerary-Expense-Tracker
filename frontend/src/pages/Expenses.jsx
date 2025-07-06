@@ -1,31 +1,25 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Pie } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
-} from "chart.js";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import { useApi } from "../utils/api";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const Expenses = () => {
-  const completedTrips = JSON.parse(localStorage.getItem("completedExpenses")) || [];
+  const [data, setData] = useState(null);
+  const { getWithAuth } = useApi();
 
-  let food = 0, stay = 0, places = 0;
+  useEffect(() => {
+    getWithAuth("/expenses").then(setData);
+  }, []);
 
-  completedTrips.forEach((trip) => {
-    food += trip.expenseBreakdown.food || 0;
-    stay += trip.expenseBreakdown.accommodation || 0;
-    places += (trip.expenseBreakdown.misc || 0) + (trip.expenseBreakdown.travel || 0);
-  });
+  if (!data) return <p>Loading...</p>;
 
-  const data = {
+  const chartData = {
     labels: ["Food", "Stay", "Places"],
     datasets: [
       {
-        label: "Total Expenses",
-        data: [food, stay, places],
+        data: [data.food, data.stay, data.places],
         backgroundColor: [
           "rgba(255, 99, 132, 0.7)",
           "rgba(54, 162, 235, 0.7)",
@@ -39,11 +33,11 @@ const Expenses = () => {
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white shadow rounded">
       <h2 className="text-2xl font-bold text-center mb-6">
-        Expenses from Completed Trips
+        Your Trip Expenses
       </h2>
-      <Pie data={data} />
+      <Pie data={chartData} />
       <div className="mt-6 text-lg font-semibold text-center">
-        Total: ₹{food + stay + places}
+        Total: ₹{data.total}
       </div>
     </div>
   );

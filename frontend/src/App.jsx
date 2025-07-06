@@ -7,19 +7,20 @@ import {
   RedirectToSignIn,
 } from "@clerk/clerk-react";
 
-import Navbar from "./components/Navbar";
+import Navbar from "./components/layout/Navbar";
 import Dashboard from "./pages/Dashboard";
 import TripList from "./pages/TripList";
 import TripDetail from "./pages/TripDetail";
 import CustomizeTrip from "./pages/CustomizeTrip";
 import Expenses from "./pages/Expenses";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
-function App() {
+const App = () => {
   return (
     <>
       <Navbar />
       <Routes>
-        {/* Public Clerk Auth Routes */}
+        {/* Public Auth Routes */}
         <Route
           path="/sign-in/*"
           element={<SignIn routing="path" path="/sign-in" />}
@@ -28,51 +29,46 @@ function App() {
           path="/sign-up/*"
           element={<SignUp routing="path" path="/sign-up" />}
         />
-        <Route path="/customize" element={<CustomizeTrip />} />
-        <Route path="/expenses" element={<Expenses />} />
+
+        {/* Public Route */}
+        <Route path="/" element={<Dashboard />} />
+
         {/* Protected Routes */}
         <Route
-          path="/"
+          path="/trips"
           element={
-            <>
-              <SignedIn>
-                <Dashboard />
-              </SignedIn>
-              <SignedOut>
-                <RedirectToSignIn />
-              </SignedOut>
-            </>
+            <ProtectedRoute>
+              <TripList />
+            </ProtectedRoute>
           }
         />
         <Route
           path="/trip/:id"
           element={
-            <>
-              <SignedIn>
-                <TripDetail />
-              </SignedIn>
-              <SignedOut>
-                <RedirectToSignIn />
-              </SignedOut>
-            </>
+            <ProtectedRoute>
+              <TripDetail />
+            </ProtectedRoute>
           }
         />
         <Route
-          path="/trips"
+          path="/customize"
           element={
-            <>
-              <SignedIn>
-                <TripList />
-              </SignedIn>
-              <SignedOut>
-                <RedirectToSignIn />
-              </SignedOut>
-            </>
+            <ProtectedRoute>
+              <CustomizeTrip />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/expenses"
+          element={
+            <ProtectedRoute>
+              <Expenses />
+            </ProtectedRoute>
           }
         />
       </Routes>
     </>
   );
-}
+};
 
 export default App;

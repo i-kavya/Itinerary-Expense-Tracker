@@ -15,7 +15,9 @@ const ItineraryCard = ({ itinerary = [] }) => {
               <span className="text-blue-600 font-semibold">{item.day}</span>
               <span className="text-sm text-gray-500">{item.time}</span>
             </div>
-            <p className="text-gray-800 ml-1">{item.activity}</p>
+            <p className="text-gray-800 ml-1">
+              {item.activity || item.description}
+            </p>
           </li>
         ))}
       </ul>
