@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useApi } from "../utils/api";
-import { FiCheckCircle, FiRotateCcw } from "react-icons/fi";
+import { FiCheckCircle, FiRotateCcw, FiTrash2 } from "react-icons/fi";
 
 const TripList = () => {
-  const { getWithAuth, patchWithAuth } = useApi();
+  const { getWithAuth, patchWithAuth, deleteWithAuth } = useApi();
   const [trips, setTrips] = useState([]);
 
   useEffect(() => {
@@ -16,18 +16,21 @@ const TripList = () => {
 
   const handleComplete = async (id) => {
     await patchWithAuth(`/trips/${id}/complete`, { completed: true });
-    const updated = trips.map((t) =>
-      t._id === id ? { ...t, completed: true } : t
+    setTrips((prev) =>
+      prev.map((t) => (t._id === id ? { ...t, completed: true } : t))
     );
-    setTrips(updated);
   };
 
   const handleRevert = async (id) => {
     await patchWithAuth(`/trips/${id}/complete`, { completed: false });
-    const updated = trips.map((t) =>
-      t._id === id ? { ...t, completed: false } : t
+    setTrips((prev) =>
+      prev.map((t) => (t._id === id ? { ...t, completed: false } : t))
     );
-    setTrips(updated);
+  };
+
+  const handleDelete = async (id) => {
+    await deleteWithAuth(`/trips/${id}`);
+    setTrips((prev) => prev.filter((t) => t._id !== id));
   };
 
   return (
@@ -58,14 +61,10 @@ const TripList = () => {
                 </p>
 
                 <p className="text-md font-semibold text-gray-700 mt-2">
-                  Total Expense: ₹
-                  {trip.expenseBreakdown.food +
-                    trip.expenseBreakdown.travel +
-                    trip.expenseBreakdown.accommodation +
-                    trip.expenseBreakdown.misc}
+                  Total Expense: ₹{trip.cost}
                 </p>
 
-                <div className="mt-4 flex justify-between items-center">
+                <div className="mt-4 flex flex-wrap gap-3">
                   {trip.completed ? (
                     <button
                       onClick={() => handleRevert(trip._id)}
@@ -81,6 +80,13 @@ const TripList = () => {
                       <FiCheckCircle /> Mark Complete
                     </button>
                   )}
+
+                  <button
+                    onClick={() => handleDelete(trip._id)}
+                    className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
+                  >
+                    <FiTrash2 /> Delete
+                  </button>
                 </div>
               </div>
             ))}

@@ -10,13 +10,6 @@ const hotelOptions = [
   { name: "Luxury Resort", pricePerNight: 5000 },
 ];
 
-const dailyActivities = [
-  { name: "Sightseeing", cost: 1000 },
-  { name: "Adventure Sports", cost: 2000 },
-  { name: "Local Food Tour", cost: 800 },
-  { name: "Museum Visit", cost: 500 },
-];
-
 const foodOptions = ["Breakfast", "Lunch", "Dinner"];
 
 const CustomizeTrip = () => {
@@ -27,13 +20,34 @@ const CustomizeTrip = () => {
 
   const [people, setPeople] = useState(1);
   const [nights, setNights] = useState(1);
-  const [selectedHotel, setSelectedHotel] = useState(hotelOptions[0]);
+  const [selectedHotel, setSelectedHotel] = useState(null); // 🔹 initially unselected
   const [activitySelections, setActivitySelections] = useState({});
   const [foodCost, setFoodCost] = useState(0);
   const [activityCost, setActivityCost] = useState(0);
   const [totalExpense, setTotalExpense] = useState(0);
+  const [isCustomized, setIsCustomized] = useState(false);
+
+  const extractedActivities =
+    destination?.itinerary?.map((item) => item.activity).filter(Boolean) || [];
+  const uniqueActivities = [...new Set(extractedActivities)].map(
+    (activity) => ({
+      name: activity,
+      cost: 1000,
+    })
+  );
 
   useEffect(() => {
+    if (
+      !destination ||
+      nights <= 0 ||
+      people <= 0 ||
+      !isCustomized ||
+      !selectedHotel
+    ) {
+      setTotalExpense(0);
+      return;
+    }
+
     let food = 0;
     let act = 0;
 
@@ -43,7 +57,7 @@ const CustomizeTrip = () => {
         if (foodOptions.includes(actName)) {
           food += 200;
         } else {
-          const activity = dailyActivities.find((a) => a.name === actName);
+          const activity = uniqueActivities.find((a) => a.name === actName);
           act += activity?.cost || 0;
         }
       });
@@ -55,9 +69,17 @@ const CustomizeTrip = () => {
     setFoodCost(food);
     setActivityCost(act);
     setTotalExpense(total);
-  }, [people, nights, selectedHotel, activitySelections]);
+  }, [
+    people,
+    nights,
+    selectedHotel,
+    activitySelections,
+    destination,
+    isCustomized,
+  ]);
 
   const handleActivityChange = (day, name, checked) => {
+    setIsCustomized(true);
     setActivitySelections((prev) => {
       const current = prev[day] || [];
       return {
@@ -65,6 +87,11 @@ const CustomizeTrip = () => {
         [day]: checked ? [...current, name] : current.filter((a) => a !== name),
       };
     });
+  };
+
+  const handleHotelChange = (hotel) => {
+    setIsCustomized(true);
+    setSelectedHotel(hotel);
   };
 
   const handleSave = async () => {
@@ -101,7 +128,9 @@ const CustomizeTrip = () => {
 
   if (!destination)
     return (
-      <p className="text-center text-gray-600">No destination selected.</p>
+      <p className="text-center text-gray-600 mt-20">
+        No destination selected.
+      </p>
     );
 
   return (
@@ -116,25 +145,53 @@ const CustomizeTrip = () => {
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Number of People
           </label>
-          <input
-            type="number"
-            min={1}
-            value={people}
-            onChange={(e) => setPeople(+e.target.value)}
-            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                setPeople((p) => Math.max(1, p - 1));
+                setIsCustomized(true);
+              }}
+              className="px-3 py-1 bg-gray-200 rounded"
+            >
+              −
+            </button>
+            <span className="text-lg">{people}</span>
+            <button
+              onClick={() => {
+                setPeople((p) => p + 1);
+                setIsCustomized(true);
+              }}
+              className="px-3 py-1 bg-gray-200 rounded"
+            >
+              +
+            </button>
+          </div>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Number of Nights
           </label>
-          <input
-            type="number"
-            min={1}
-            value={nights}
-            onChange={(e) => setNights(+e.target.value)}
-            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                setNights((n) => Math.max(1, n - 1));
+                setIsCustomized(true);
+              }}
+              className="px-3 py-1 bg-gray-200 rounded"
+            >
+              −
+            </button>
+            <span className="text-lg">{nights}</span>
+            <button
+              onClick={() => {
+                setNights((n) => n + 1);
+                setIsCustomized(true);
+              }}
+              className="px-3 py-1 bg-gray-200 rounded"
+            >
+              +
+            </button>
+          </div>
         </div>
       </div>
 
@@ -150,8 +207,8 @@ const CustomizeTrip = () => {
               <input
                 type="radio"
                 name="hotel"
-                checked={selectedHotel.name === hotel.name}
-                onChange={() => setSelectedHotel(hotel)}
+                checked={selectedHotel?.name === hotel.name}
+                onChange={() => handleHotelChange(hotel)}
                 className="mr-3"
               />
               <span>
@@ -171,7 +228,7 @@ const CustomizeTrip = () => {
           <div key={i} className="bg-gray-50 rounded-lg p-4 mb-4 border">
             <h4 className="font-medium text-blue-600 mb-2">Day {i + 1}</h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {dailyActivities.map((act) => (
+              {uniqueActivities.map((act) => (
                 <label
                   key={act.name}
                   className="text-sm text-gray-700 flex items-center"
@@ -220,13 +277,23 @@ const CustomizeTrip = () => {
       </div>
 
       {/* Total Cost */}
-      <div className="text-xl font-bold text-green-600 mb-6 text-center">
-        Estimated Total Expense: ₹{totalExpense}
+      <div
+        className={`text-xl font-bold mb-6 text-center ${
+          totalExpense > 0 ? "text-green-600" : "text-gray-500"
+        }`}
+      >
+        Estimated Total Expense: ₹{totalExpense || 0}
       </div>
 
       {/* Save Button */}
       <div className="text-center">
-        <Button onClick={handleSave}>Save My Itinerary</Button>
+        <Button
+          onClick={handleSave}
+          className="w-full sm:w-auto"
+          disabled={!selectedHotel}
+        >
+          Save My Itinerary
+        </Button>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaSearch } from "react-icons/fa";
 import destinationsData from "../data/destinations";
@@ -11,6 +11,12 @@ const Dashboard = () => {
   const [filter, setFilter] = useState("All");
   const [customTrip, setCustomTrip] = useState(null);
   const navigate = useNavigate();
+
+  // 👇 Get unique categories from destination data
+  const categories = useMemo(() => {
+    const unique = new Set(destinationsData.map((d) => d.category));
+    return ["All", ...Array.from(unique)];
+  }, []);
 
   const filtered = destinationsData.filter(
     (dest) =>
@@ -43,10 +49,11 @@ const Dashboard = () => {
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
         >
-          <option value="All">All Categories</option>
-          <option value="Beach">Beach</option>
-          <option value="Mountain">Mountain</option>
-          <option value="City">City</option>
+          {categories.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
         </select>
       </div>
 

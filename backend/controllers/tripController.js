@@ -38,3 +38,16 @@ export const updateTrip = async (req, res) => {
     return res.status(404).json({ error: "Trip not found or unauthorized" });
   res.json(trip);
 };
+
+// ✅ Delete a trip
+export const deleteTrip = async (req, res) => {
+  const trip = await Trip.findOneAndDelete({
+    _id: req.params.id,
+    userId: req.auth.userId,
+  });
+
+  if (!trip)
+    return res.status(404).json({ error: "Trip not found or unauthorized" });
+
+  res.json({ message: "Trip deleted successfully" });
+};
