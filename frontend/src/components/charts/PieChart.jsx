@@ -16,22 +16,55 @@ const PieChart = ({ destination }) => {
         label: "Expense Breakdown",
         data: [food, travel, accommodation, misc],
         backgroundColor: [
-          "rgba(75, 192, 192, 0.7)",
-          "rgba(255, 99, 132, 0.7)",
-          "rgba(255, 206, 86, 0.7)",
-          "rgba(153, 102, 255, 0.7)",
+          "#4ade80", // Green - Food
+          "#60a5fa", // Blue - Travel
+          "#facc15", // Yellow - Accommodation
+          "#f472b6", // Pink - Misc
         ],
-        borderWidth: 1,
+        borderColor: "#fff",
+        borderWidth: 2,
+        hoverOffset: 10,
       },
     ],
   };
 
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: "bottom",
+        labels: {
+          color: "#374151", // Tailwind's gray-700
+          font: {
+            size: 14,
+            family: "Inter, sans-serif",
+          },
+          padding: 20,
+          boxWidth: 20,
+        },
+      },
+      tooltip: {
+        backgroundColor: "#1f2937", // dark tooltip
+        titleColor: "#f9fafb",
+        bodyColor: "#f3f4f6",
+        cornerRadius: 6,
+        padding: 10,
+      },
+    },
+    animation: {
+      animateRotate: true,
+      duration: 1000,
+      easing: "easeOutBounce",
+    },
+  };
+
   return (
-    <div className="max-w-xl mx-auto mt-10 p-6 bg-white shadow-md rounded-lg">
-      <h2 className="text-xl font-bold text-center mb-4 text-gray-700">
-        Expense Breakdown for {destination.name}
+    <div className="max-w-2xl mx-auto mt-10 px-4 py-6 bg-gradient-to-br from-white via-slate-50 to-slate-100 shadow-xl rounded-xl border border-gray-200 transition-transform hover:scale-[1.02]">
+      <h2 className="text-2xl font-semibold text-center mb-6 text-gray-800 tracking-wide">
+        💸 Expense Breakdown for{" "}
+        <span className="text-blue-500">{destination.name}</span>
       </h2>
-      <Pie data={data} />
+      <Pie data={data} options={options} />
     </div>
   );
 };
